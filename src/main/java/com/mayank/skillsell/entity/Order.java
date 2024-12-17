@@ -11,17 +11,22 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-@Entity
+@Entity(name = "order_table")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userId;
-    private Integer totalPrice;
+    private Double totalPrice;
     private OrderStatus orderStatus;
     private Long created_at;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<OrderItem> orderItems;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "user_id"
+    )
+    private User user;
 }

@@ -8,7 +8,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -31,7 +30,7 @@ public class CartService {
         Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
 
         // Check if the cart already contains the product
-        boolean alreadyInCart = cart.getItems().stream()
+        boolean alreadyInCart = cart.getCartItems().stream()
                 .anyMatch(cartItem -> cartItem.getProduct().getId().equals(productId));
 
         if (alreadyInCart) {
@@ -42,13 +41,12 @@ public class CartService {
         CartItem cartItem = new CartItem();
         cartItem.setProduct(product);
         cartItem.setQuantity(quantity);
-        cartItem.setPrice(product.getPrice() * quantity);  // Price calculation
 
         // Associate the CartItem with the Cart
         cartItem.setCart(cart);
 
         // Add the CartItem to the Cart's list of items
-        cart.addItem(cartItem);
+        cart.getCartItems().add(cartItem);
 
         // Save the updated cart with the new item
         cartRepository.save(cart);
@@ -62,15 +60,15 @@ public class CartService {
     // Retrieves all items in the cart
     public List<CartItem> getCartItems(Long cartId) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
-        return cart.getItems();
+        return cart.getCartItems();
     }
 
     // Calculate the total price of the cart
-    public Integer calculateTotalPrice(Long cartId) {
+    public Double calculateTotalPrice(Long cartId) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
 
-        return cart.getItems().stream()
-                .mapToInt(cartItem -> cartItem.getPrice().intValue())
+        return cart.getCartItems().stream()
+                .mapToDouble(cartItem -> cartItem.getProduct().getPrice()) // Assuming price is Integer
                 .sum();
     }
 
@@ -79,13 +77,13 @@ public class CartService {
     public void removeItemFromCart(Long cartId, Long productId) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
 
-        CartItem cartItemToRemove = cart.getItems().stream()
+        CartItem cartItemToRemove = cart.getCartItems().stream()
                 .filter(cartItem -> cartItem.getProduct().getId().equals(productId))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Product not found in cart"));
 
         // Remove the item from the cart
-        cart.getItems().remove(cartItemToRemove);
+        cart.getCartItems().remove(cartItemToRemove);
 
         // Delete the cart item from the repository
         cartItemRepository.delete(cartItemToRemove);

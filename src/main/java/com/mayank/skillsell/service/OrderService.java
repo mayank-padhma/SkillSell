@@ -1,6 +1,7 @@
 package com.mayank.skillsell.service;
 
 import com.mayank.skillsell.entity.Order;
+import com.mayank.skillsell.enums.OrderStatus;
 import com.mayank.skillsell.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,6 @@ public class OrderService {
     }
 
     public List<Order> findOrdersByStatus(String status) {
-        return orderRepository.findByStatus(status);
+        return orderRepository.findByOrderStatus(OrderStatus.valueOf(status));
     }
 }

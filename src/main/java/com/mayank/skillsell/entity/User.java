@@ -3,11 +3,13 @@ package com.mayank.skillsell.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-@Entity
+@Entity(name = "user_table")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,4 +24,9 @@ public class User {
             cascade = CascadeType.ALL
     )
     private Cart cart;
+
+    @OneToMany(
+            mappedBy = "user"
+    )
+    private List<Order> orders;
 }

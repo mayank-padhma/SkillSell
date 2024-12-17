@@ -17,7 +17,6 @@ public class CartItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Integer quantity;
-    private Double price;
     @ManyToOne
     @JoinColumn(
             name = "cart_id"
@@ -26,6 +25,6 @@ public class CartItem {
     private Cart cart;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", insertable = false, updatable = false) // Reference to the Product table
+    @JoinColumn(name = "product_id")
     private Product product;
 }
