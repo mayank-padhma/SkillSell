@@ -1,5 +1,6 @@
 package com.mayank.skillsell.service;
 
+import com.mayank.skillsell.dto_and_mapper.*;
 import com.mayank.skillsell.entity.*;
 import com.mayank.skillsell.entity.Cart;
 import com.mayank.skillsell.repository.*;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CartService {
@@ -21,6 +23,12 @@ public class CartService {
 
     @Autowired
     private CartItemRepository cartItemRepository;
+
+    @Autowired
+    private CartMapper cartMapper;
+
+    @Autowired
+    private CartItemMapper cartItemMapper;
 
     // Adds an item to the cart
     @Transactional
@@ -52,15 +60,22 @@ public class CartService {
         cartRepository.save(cart);
     }
 
+    // Retrieves the cartDto by user ID
+    public CartDto getCartDtoByUserId(Long userId) {
+        return cartMapper.toCartDto(cartRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Cart not found for this user")));
+    }
+
     // Retrieves the cart by user ID
     public Cart getCartByUserId(Long userId) {
         return cartRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Cart not found for this user"));
     }
 
     // Retrieves all items in the cart
-    public List<CartItem> getCartItems(Long cartId) {
+    public List<CartItemDto> getCartItems(Long cartId) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
-        return cart.getCartItems();
+        return cart.getCartItems()
+                .stream().map(cartItemMapper::toCartItemDto)
+                .collect(Collectors.toList());
     }
 
     // Calculate the total price of the cart
@@ -90,5 +105,14 @@ public class CartService {
 
         // Save the updated cart
         cartRepository.save(cart);
+    }
+
+    public void buyCart(Long userId) {
+        Cart cart = getCartByUserId(userId);
+        for (CartItem cartItem: cart.getCartItems()){
+            Product product = cartItem.getProduct();
+            productRepository.incrementPurchaseCount(product.getId());
+            productRepository.decrementStockCount(product.getId(), cartItem.getQuantity());
+        }
     }
 }

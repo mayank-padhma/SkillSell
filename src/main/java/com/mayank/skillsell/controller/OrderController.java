@@ -1,27 +1,49 @@
 package com.mayank.skillsell.controller;
 
+import com.mayank.skillsell.dto_and_mapper.OrderDto;
 import com.mayank.skillsell.entity.Order;
+import com.mayank.skillsell.entity.User;
 import com.mayank.skillsell.service.OrderService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/orders")
+@Tag(name = "Order APIs", description = "Handles the orders for sellers and customers")
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
 
+    @GetMapping("/buy")
+    public List<OrderDto> getAllOrdersByBuyerId(@AuthenticationPrincipal User user
+    ) {
+        var userId = user.getId();
+        return orderService.getOrdersDtoByBuyerId(userId);
+    }
+
     @GetMapping
-    public List<Order> getAllOrders() {
-        return orderService.getAllOrders();
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<OrderDto> getAllOrders(@AuthenticationPrincipal User user
+    ) {
+        return orderService.getOrdersDto();
+    }
+
+    @GetMapping("/sell")
+    public List<OrderDto> getAllOrdersBySellerId(@AuthenticationPrincipal User user
+    ) {
+        var userId = user.getId();
+        return orderService.getOrdersDtoBySellerId(userId);
     }
 
     @GetMapping("/{id}")
-    public Order getOrderById(@PathVariable Long id) {
-        return orderService.getOrderById(id);
+    public OrderDto getOrderById(@PathVariable Long id) {
+        return orderService.getOrderDtoById(id);
     }
 
     @PostMapping

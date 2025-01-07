@@ -1,42 +1,82 @@
 package com.mayank.skillsell.controller;
 
+import com.mayank.skillsell.dto_and_mapper.NewProductDto;
+import com.mayank.skillsell.dto_and_mapper.ProductDto;
 import com.mayank.skillsell.entity.Product;
 import com.mayank.skillsell.service.ProductService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/products")
+@Tag(name = "Product APIs", description = "Used to add, delete, update and retrieve products")
 public class ProductController {
 
     @Autowired
     private ProductService productService;
 
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+    public List<ProductDto> getAllProducts() {
+        return productService.getAllProductsDto();
     }
 
     @GetMapping("/{id}")
-    public Product getProductById(@PathVariable Long id) {
-        return productService.getProductById(id);
+    public ProductDto getProductById(@PathVariable Long id) {
+        return productService.getProductDtoById(id);
+    }
+
+    @GetMapping("/popular")
+    public List<ProductDto> getPopularProducts() {
+        return productService.getPopularProductsDto();
     }
 
     @PostMapping
-    public Product createProduct(@RequestBody Product product) {
-        return productService.createProduct(product);
+    @PreAuthorize("hasRole('SELLER')")
+    public Product createProduct(@RequestBody NewProductDto newProductDto) {
+        return productService.createProduct(newProductDto);
     }
 
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id, @RequestBody Product product) {
-        return productService.updateProduct(id, product);
+    @PreAuthorize("hasRole('SELLER')")
+    public Product updateProduct(@PathVariable Long id, @RequestBody NewProductDto newProductDto) {
+        return productService.updateProduct(id, newProductDto);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SELLER')")
     public String deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return "Product deleted successfully!";
+    }
+
+    // Get products by category ID
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<ProductDto>> getProductsByCategoryId(@PathVariable Long categoryId) {
+        List<ProductDto> products = productService.findProductsDtoByCategoryId(categoryId);
+
+        // Check if products are found for the category
+        if (products.isEmpty()) {
+            return ResponseEntity.noContent().build();  // HTTP 204 No Content
+        }
+
+        return ResponseEntity.ok(products);  // HTTP 200 OK
+    }
+
+    // Get products by category name
+    @GetMapping("/category/{categoryName}")
+    public ResponseEntity<List<ProductDto>> getProductsByCategoryName(@PathVariable String categoryName) {
+        List<ProductDto> products = productService.findProductDtoByCategoryName(categoryName);
+
+        // Check if products are found for the category
+        if (products.isEmpty()) {
+            return ResponseEntity.noContent().build();  // HTTP 204 No Content
+        }
+
+        return ResponseEntity.ok(products);  // HTTP 200 OK
     }
 }

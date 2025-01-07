@@ -1,59 +1,83 @@
 package com.mayank.skillsell.controller;
 
+import com.mayank.skillsell.dto_and_mapper.CartDto;
+import com.mayank.skillsell.dto_and_mapper.CartItemDto;
+import com.mayank.skillsell.dto_and_mapper.ProductDto;
 import com.mayank.skillsell.entity.CartItem;
-import com.mayank.skillsell.entity.Category;
 import com.mayank.skillsell.entity.Cart;
+import com.mayank.skillsell.entity.User;
 import com.mayank.skillsell.service.CartService;
-import com.mayank.skillsell.service.CategoryService;
+import com.mayank.skillsell.service.ProductService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 
 @RestController
-@RequestMapping("/api/cart")
+@RequestMapping("/cart")
+@Tag(name = "Cart APIs", description = "Handles the user's cart")
 public class CartController {
     @Autowired
     private CartService cartService;
 
     // Add an item to the cart
-    @PostMapping("/{cartId}/add-item")
+    @PostMapping("/add-item")
     public ResponseEntity<String> addItemToCart(
-            @PathVariable Long cartId,
             @RequestParam Long productId,
-            @RequestParam Integer quantity) {
+            @RequestParam Integer quantity,
+            @AuthenticationPrincipal User user) {
+        var cartId = user.getCart().getId();
         cartService.addItemToCart(cartId, productId, quantity);
         return ResponseEntity.ok("Item added to cart successfully");
     }
 
+    @PostMapping("/buy")
+    public ResponseEntity<String> buyCart(@AuthenticationPrincipal User user) {
+        cartService.buyCart(user.getId());
+        return ResponseEntity.ok("Item added to cart successfully");
+    }
+
     // Retrieve the cart by user ID
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<Cart> getCartByUserId(@PathVariable Long userId) {
-        Cart cart = cartService.getCartByUserId(userId);
-        return ResponseEntity.ok(cart);
+    @GetMapping("/user")
+    public ResponseEntity<CartDto> getCartByUserId(
+            @AuthenticationPrincipal User user
+    ) {
+        var userId = user.getId();
+        CartDto cartDto = cartService.getCartDtoByUserId(userId);
+        return ResponseEntity.ok(cartDto);
     }
 
     // Retrieve all items in the cart
-    @GetMapping("/{cartId}/items")
-    public ResponseEntity<List<CartItem>> getCartItems(@PathVariable Long cartId) {
-        List<CartItem> cartItems = cartService.getCartItems(cartId);
+    @GetMapping("/items")
+    public ResponseEntity<List<CartItemDto>> getCartItems(
+            @AuthenticationPrincipal User user
+    ) {
+        var cartId = user.getCart().getId();
+        List<CartItemDto> cartItems = cartService.getCartItems(cartId);
         return ResponseEntity.ok(cartItems);
     }
 
     // Calculate the total price of the cart
     @GetMapping("/{cartId}/total-price")
-    public ResponseEntity<Double> calculateTotalPrice(@PathVariable Long cartId) {
+    public ResponseEntity<Double> calculateTotalPrice(
+            @AuthenticationPrincipal User user
+    ) {
+        var cartId = user.getCart().getId();
         Double totalPrice = cartService.calculateTotalPrice(cartId);
         return ResponseEntity.ok(totalPrice);
     }
 
     // Remove an item from the cart
-    @DeleteMapping("/{cartId}/remove-item")
+    @DeleteMapping("/remove-item")
     public ResponseEntity<String> removeItemFromCart(
-            @PathVariable Long cartId,
-            @RequestParam Long productId) {
+            @RequestParam Long productId,
+            @AuthenticationPrincipal User user
+    ) {
+        var cartId = user.getCart().getId();
         cartService.removeItemFromCart(cartId, productId);
         return ResponseEntity.ok("Item removed from cart successfully");
     }
