@@ -37,7 +37,7 @@ public class ProductController {
 
     @PostMapping
     @PreAuthorize("hasRole('SELLER')")
-    public Product createProduct(@RequestBody NewProductDto newProductDto) {
+    public ProductDto createProduct(@RequestBody NewProductDto newProductDto) {
         return productService.createProduct(newProductDto);
     }
 
@@ -55,7 +55,7 @@ public class ProductController {
     }
 
     // Get products by category ID
-    @GetMapping("/category/{categoryId}")
+    @GetMapping("/category/id/{categoryId}")
     public ResponseEntity<List<ProductDto>> getProductsByCategoryId(@PathVariable Long categoryId) {
         List<ProductDto> products = productService.findProductsDtoByCategoryId(categoryId);
 
@@ -68,7 +68,7 @@ public class ProductController {
     }
 
     // Get products by category name
-    @GetMapping("/category/{categoryName}")
+    @GetMapping("/category/name/{categoryName}")
     public ResponseEntity<List<ProductDto>> getProductsByCategoryName(@PathVariable String categoryName) {
         List<ProductDto> products = productService.findProductDtoByCategoryName(categoryName);
 

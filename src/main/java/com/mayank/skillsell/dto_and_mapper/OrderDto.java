@@ -12,6 +12,5 @@ public record OrderDto(
         Long createdAt,
 
         List<OrderItemDto> orderItems,
-        UserDto buyer,
-        UserDto seller
+        UserDto buyer
 ) { }

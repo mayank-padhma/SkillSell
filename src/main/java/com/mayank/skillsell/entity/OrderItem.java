@@ -21,7 +21,7 @@ public class OrderItem {
     private Order order;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", insertable = false, updatable = false) // Reference to the Product table
+    @JoinColumn(name = "product_id") // Reference to the Product table
     private Product product;
 
 }

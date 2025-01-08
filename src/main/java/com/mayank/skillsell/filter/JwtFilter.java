@@ -18,29 +18,29 @@ import java.io.IOException;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private UserDetailsService userDetailsService;
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;
 
-//    public JwtFilter(@Lazy UserDetailsService userDetailsService, JwtUtil jwtUtil) {
-//        this.userDetailsService = userDetailsService;
-//        this.jwtUtil = jwtUtil;
-//    }
+    @Autowired
+    public JwtFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService){
+        this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String authorizationHeader = request.getHeader("Authorization");
-        String username = null;
-        String jwt = null;
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
-            username = jwtUtil.extractUsername(jwt);
+        if(authorizationHeader == null || !authorizationHeader.startsWith("Bearer")) {
+            filterChain.doFilter(request,response);
+            return;
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        String jwt = authorizationHeader.substring(7);
+        String username = jwtUtil.extractUsername(jwt);
+
+        if (username != null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
             if (jwtUtil.validateToken(jwt)) {

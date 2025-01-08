@@ -3,7 +3,9 @@ package com.mayank.skillsell.service;
 import com.mayank.skillsell.dto_and_mapper.NewUserDto;
 import com.mayank.skillsell.dto_and_mapper.UserDto;
 import com.mayank.skillsell.dto_and_mapper.UserMapper;
+import com.mayank.skillsell.entity.Cart;
 import com.mayank.skillsell.entity.User;
+import com.mayank.skillsell.repository.CartRepository;
 import com.mayank.skillsell.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,6 +22,8 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private CartRepository cartRepository;
     @Autowired
     private UserMapper userMapper;
     @Autowired
@@ -52,6 +56,7 @@ public class UserService {
         if (userRepository.existsByUsername(newUserDto.username())) {
             throw new RuntimeException("Username already exists!");
         }
+
         String token = UUID.randomUUID().toString();
         User user = new User();
         user.setUsername(newUserDto.username());
@@ -61,7 +66,11 @@ public class UserService {
         user.setRoles(newUserDto.roles());
         user.setIsVerified(false); // Set initial verification state
         user.setVerificationToken(token);
+        Cart cart = new Cart();
+        user.setCart(cart);  //
         userRepository.save(user);
+        cart.setUser(user);  // Associate the cart with the user
+        cartRepository.save(cart);
         sendVerificationEmail(user);
     }
 
@@ -102,5 +111,10 @@ public class UserService {
         return userRepository.findByVerificationToken(token)
                 .orElseThrow(() -> new RuntimeException("User not found with provided verification token")
                 );
+    }
+
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
     }
 }

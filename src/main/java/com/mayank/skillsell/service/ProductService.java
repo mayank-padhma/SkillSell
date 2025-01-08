@@ -6,6 +6,7 @@ import com.mayank.skillsell.dto_and_mapper.ProductMapper;
 import com.mayank.skillsell.entity.Category;
 import com.mayank.skillsell.entity.Product;
 import com.mayank.skillsell.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -84,6 +85,7 @@ public class ProductService {
         return product;
     }
 
+    @Transactional
     public ProductDto getProductDtoById(Long id) {
         var product =  productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
@@ -91,7 +93,7 @@ public class ProductService {
         return productMapper.toProductDto(product);
     }
 
-    public Product createProduct(NewProductDto newProductDto) {
+    public ProductDto createProduct(NewProductDto newProductDto) {
         Category category = categoryService.getCategoryById(newProductDto.categoryId());
         Product product = new Product();
         product.setName(newProductDto.name());
@@ -100,7 +102,7 @@ public class ProductService {
         product.setStock(newProductDto.stock());
         product.setImageUrl(newProductDto.imageUrl());
         product.setCategory(category);
-        return productRepository.save(product);
+        return productMapper.toProductDto(productRepository.save(product));
     }
 
     public Product updateProduct(Long id, NewProductDto productDto) {
@@ -136,12 +138,14 @@ public class ProductService {
     }
 
     public List<Product> searchProductsByName(String name) {
-        var products = productRepository.findByNameContaining(name);
+        var products = productRepository.findByNameContainingIgnoreCase(name);
         products.forEach(product -> productRepository.incrementSearchCount(product.getId()));
         return products;
     }
+
+    @Transactional
     public List<ProductDto> searchProductsDtoByName(String name) {
-        var products = productRepository.findByNameContaining(name);
+        var products = productRepository.findByNameContainingIgnoreCase(name);
         products.forEach(product -> productRepository.incrementSearchCount(product.getId()));
         return products.stream().map(productMapper::toProductDto).collect(Collectors.toList());
     }

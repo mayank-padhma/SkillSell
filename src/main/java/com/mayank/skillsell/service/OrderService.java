@@ -48,19 +48,6 @@ public class OrderService {
     }
 
     /**
-     * Fetch all orders placed by a seller.
-     */
-    public List<Order> getOrdersBySellerId(Long sellerId) {
-        return orderRepository.findBySellerId(sellerId);
-    }
-
-    public List<OrderDto> getOrdersDtoBySellerId(Long sellerId) {
-        return orderRepository.findBySellerId(sellerId)
-                .stream().map(orderMapper::toOrderDto)
-                .collect(Collectors.toList());
-    }
-
-    /**
      * Fetch order by its ID.
      */
     public Order getOrderById(Long id) {

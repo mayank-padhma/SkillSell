@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/search")
+@RequestMapping("/search")
 @Tag(name = "Search APIs", description = "Handles the search products")
 public class SearchController {
 

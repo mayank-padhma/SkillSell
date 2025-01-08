@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,12 @@ public class CartService {
 
     @Autowired
     private CartItemMapper cartItemMapper;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private OrderService orderService;
 
     // Adds an item to the cart
     @Transactional
@@ -107,12 +114,50 @@ public class CartService {
         cartRepository.save(cart);
     }
 
-    public void buyCart(Long userId) {
-        Cart cart = getCartByUserId(userId);
-        for (CartItem cartItem: cart.getCartItems()){
+    @Transactional
+    public void buyCart(Long buyerId) {
+        Cart cart = cartRepository.findByUserId(buyerId)
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
+
+        Order order = new Order();
+        order.setBuyer(userService.getUserById(buyerId));
+        order.setOrderItems(new ArrayList<>());
+
+        double totalPrice = 0.0;
+
+        for (CartItem cartItem : cart.getCartItems()) {
             Product product = cartItem.getProduct();
+
+            // Check stock and decrement atomically
+            int updated = productRepository.decrementStock(product.getId(), cartItem.getQuantity());
+            if (updated == 0) {
+                throw new RuntimeException("Insufficient stock for product: " + product.getName());
+            }
+
+            // Increment purchase count
             productRepository.incrementPurchaseCount(product.getId());
-            productRepository.decrementStockCount(product.getId(), cartItem.getQuantity());
+
+            // Calculate price for current item
+            double itemPrice = cartItem.getQuantity() * product.getPrice();
+            totalPrice += itemPrice;
+
+            // Create OrderItem
+            OrderItem orderItem = new OrderItem();
+            orderItem.setProduct(product);
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setPrice(itemPrice); // Set the price of the item
+            orderItem.setOrder(order);
+            order.getOrderItems().add(orderItem);
         }
+
+        // Set total price of the order
+        order.setTotalPrice(totalPrice);
+
+        // Clear the cart and delete cart items
+        cartItemRepository.deleteAll(cart.getCartItems());
+        cart.getCartItems().clear();
+
+        // Save the order
+        orderService.createOrder(order);
     }
 }

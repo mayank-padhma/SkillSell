@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.mayank.skillsell.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor
@@ -19,18 +21,16 @@ public class Order {
     private Double totalPrice;
 
     @Column(name = "order_status", nullable = false)
-    private OrderStatus orderStatus;
-    private Long createdAt; // Use camelCase for consistency
+    private OrderStatus orderStatus = OrderStatus.ORDER_PLACED;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @CreationTimestamp
+    private LocalDateTime createdAt; // Use camelCase for consistency
+
+    @OneToMany(mappedBy = "order", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     @JsonManagedReference
     private List<OrderItem> orderItems;
 
     @ManyToOne
     @JoinColumn(name = "buyer_id") // Unique column for buyer
     private User buyer;
-
-    @ManyToOne
-    @JoinColumn(name = "seller_id") // Unique column for seller
-    private User seller;
 }

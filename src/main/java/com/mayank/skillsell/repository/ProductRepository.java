@@ -13,7 +13,7 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategoryId(Long categoryId);
     List<Product> findByCategoryName(String categoryName);
-    List<Product> findByNameContaining(String name);
+    List<Product> findByNameContainingIgnoreCase(String name);
     List<Product> findByPriceBetween(Double minPrice, Double maxPrice);
     @Query("SELECT p FROM Product p ORDER BY p.searchCount + p.viewCount + p.purchaseCount DESC")
     Page<Product> findPopularProducts(Pageable pageable);
@@ -27,6 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("UPDATE Product p SET p.purchaseCount = p.purchaseCount + 1 WHERE p.id = :id")
     void incrementPurchaseCount(@Param("id") Long id);
     @Modifying
-    @Query("UPDATE Product p SET p.stock = p.stock - :count WHERE p.id = :id")
-    void decrementStockCount(@Param("id") Long id, Integer count);
+    @Query("UPDATE Product p SET p.stock = p.stock - :quantity WHERE p.id = :productId AND p.stock >= :quantity")
+    int decrementStock(@Param("productId") Long productId, @Param("quantity") int quantity);
+
 }

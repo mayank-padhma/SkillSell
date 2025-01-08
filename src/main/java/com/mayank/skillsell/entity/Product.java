@@ -58,6 +58,10 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @ManyToOne
+    @JoinColumn(name = "seller_id") // Unique column for seller
+    private User seller;
+
     private Boolean isDeleted = false;
 
     public boolean isInStock() {
