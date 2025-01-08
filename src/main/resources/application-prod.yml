@@ -1,0 +1,33 @@
+spring:
+  redis:
+    host: ${PROD_REDIS_HOST}
+    port: ${PROD_REDIS_PORT}
+  datasource:
+    url: ${PROD_DB_URL}
+    username: ${PROD_DB_USERNAME}
+    password: ${PROD_DB_USERNAME}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+  mail:
+    host: live.smtp.mailtrap.io
+    port: ${PROD_MAILTRAP_PORT}
+    username: api
+    password: ${PROD_MAILTRAP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: swagger-ui
