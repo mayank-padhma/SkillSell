@@ -35,7 +35,7 @@ Skillsell is deployed on Railway.
 ## Swagger API Documentation
 
 The API documentation is available at:
-https://skillsell-prod.up.railway.app/swagger-ui/index.html#/
+http://srv751247.hstgr.cloud/swagger-ui/index.html#/
 
 ## Contact
 
