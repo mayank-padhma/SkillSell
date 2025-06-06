@@ -2,15 +2,10 @@ package com.mayank.skillsell.controller;
 
 import com.mayank.skillsell.dto_and_mapper.CartDto;
 import com.mayank.skillsell.dto_and_mapper.CartItemDto;
-import com.mayank.skillsell.dto_and_mapper.ProductDto;
-import com.mayank.skillsell.entity.CartItem;
-import com.mayank.skillsell.entity.Cart;
 import com.mayank.skillsell.entity.User;
 import com.mayank.skillsell.service.CartService;
-import com.mayank.skillsell.service.ProductService;
 import com.mayank.skillsell.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
